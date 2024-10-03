@@ -3,8 +3,8 @@ from typing import Optional
 
 
 class RatioNalTimer:
-    def __init__(self, ratio: Optional[int] = None):
-        self._ratio = ratio if ratio is not None else 3
+    def __init__(self, ratio: Optional[float] = None):
+        self._ratio = float(ratio) if ratio is not None else float(3)
         self._status = "Not started"
         self._cycle_timestamps = []
         self._current_cycle_time = timedelta(0)
@@ -52,10 +52,7 @@ class RatioNalTimer:
         return remaining_rest if remaining_rest >= timedelta(0) else timedelta(0)
 
     def _save_cycle_rest(self):
-        if self._status == "Working":
-            self._saved_rest += (self._calculate_cycle_time() / self._ratio)
-        elif self._status == "Resting":
-            self._saved_rest = self._calculate_remaining_rest()
+        self._saved_rest = self.rest_time()
 
     def work_and_rest_time(self):
         return self.work_time(), self.rest_time()
