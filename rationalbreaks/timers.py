@@ -24,6 +24,13 @@ class RatioNalTimer:
     def continue_work(self):
         self._save_cycle_rest()
         self.start()
+
+    def get_ratio(self):
+        return self._ratio
+
+    def set_ratio(self, new_ratio: float = 3):
+        converted_to_float = float(new_ratio)
+        self._ratio = converted_to_float
         
     def _calculate_cycle_time(self):
         time_passed = datetime.now() - self._cycle_timestamps[-1]
@@ -37,6 +44,8 @@ class RatioNalTimer:
             return self._saved_work + self._calculate_cycle_time()
         elif self._status == "Resting":
             return self._saved_work
+        else: # no cycle is running --> use saved only
+            return self._saved_work
 
     def _save_cycle_work(self):
         self._saved_work += self._calculate_cycle_time()
@@ -46,6 +55,9 @@ class RatioNalTimer:
             return self._saved_rest + (self._calculate_cycle_time() / self._ratio)
         elif self._status == "Resting":
             return self._calculate_remaining_rest()
+        else: # no cycle is running --> use saved only
+            return self._saved_rest
+
 
     def _calculate_remaining_rest(self):
         remaining_rest = self._saved_rest - self._calculate_cycle_time()

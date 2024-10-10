@@ -104,6 +104,33 @@ class TestRationalTimer(TestCase):
         mock_start.assert_called_once()
         mock_save_rest.assert_called_once()
 
+    def test_get_ratio(self):
+        expected = self.timer._ratio
+        output = self.timer.get_ratio()
+
+        self.assertEqual(expected, output)
+
+    def test_set_ratio(self):
+        # Case 1: input float
+        input_ratio = float(2.5)
+        self.timer.set_ratio(input_ratio)
+        self.assertEqual(self.timer._ratio, input_ratio)
+
+        # Case 2: input int
+        input_ratio = int(4)
+        self.timer.set_ratio(input_ratio)
+        self.assertEqual(self.timer._ratio, input_ratio)
+
+        # Case 3: No input
+        default = 3
+        self.timer.set_ratio()
+        self.assertEqual(self.timer._ratio, default)
+
+        # Case 4: Invalid input
+        input_ratio = str("abc")
+        with self.assertRaises(ValueError):
+            self.timer.set_ratio(input_ratio)
+
     @patch('rationalbreaks.timers.datetime')
     def test_calculate_cycle_time(self, datetime_mock):
         # representing time calculation with integer operations
@@ -140,6 +167,13 @@ class TestRationalTimer(TestCase):
 
         output = self.timer.work_time()
 
+        self.assertEqual(output, expected)
+        cycle_time_mock.assert_called_once()
+
+        # Case 3: No cycle is ongoing
+        self.timer._status = "Not started"
+        expected = self.timer._saved_work
+        output = self.timer.work_time()
         self.assertEqual(output, expected)
         cycle_time_mock.assert_called_once()
 
@@ -181,6 +215,14 @@ class TestRationalTimer(TestCase):
 
         output = self.timer.rest_time()
 
+        self.assertEqual(output, expected)
+        mock_cycle_time.assert_called_once()
+        mock_remaining_rest.assert_called_once()
+
+        # Case 3: Not in cycle
+        self.timer._status = "Not started"
+        expected = self.timer._saved_rest
+        output = self.timer.rest_time()
         self.assertEqual(output, expected)
         mock_cycle_time.assert_called_once()
         mock_remaining_rest.assert_called_once()
