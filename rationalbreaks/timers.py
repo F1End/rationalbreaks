@@ -76,7 +76,11 @@ class RatioNalTimer:
             return self.work_time(), self.rest_time()
 
     def reset(self):
-        self.__init__()
+        self._status = "Not started"
+        self._cycle_timestamps = []
+        self._current_cycle_time = timedelta(0)
+        self._saved_work = timedelta(0)
+        self._saved_rest = timedelta(0)
 
 
 class SimpleTime:

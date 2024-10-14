@@ -1,3 +1,5 @@
+"""Run this file to kick off streamlit frontend locally on your browser"""
+
 import sys
 import os.path as path
 
