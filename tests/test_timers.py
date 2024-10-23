@@ -3,7 +3,7 @@ from unittest.mock import patch, Mock, MagicMock
 from datetime import timedelta
 
 import rationalbreaks.timers
-from rationalbreaks.timers import RatioNalTimer
+from rationalbreaks.timers import RatioNalTimer, SimpleTime
 
 
 class TestRationalTimer(TestCase):
@@ -269,20 +269,82 @@ class TestRationalTimer(TestCase):
         self.assertEqual(self.timer._saved_rest, expected)
         mock_rest_time.assert_called_once()
 
+    @patch('rationalbreaks.timers.SimpleTime')
     @patch('rationalbreaks.timers.RatioNalTimer.work_time')
     @patch('rationalbreaks.timers.RatioNalTimer.rest_time')
-    def test_work_and_rest_time(self, mock_rest_time, mock_work_time):
+    def test_work_and_rest_time(self, mock_rest_time, mock_work_time, mock_smpltm):
         value_for_mock_work = "time1"
         value_for_mock_rest = "time2"
+        value_for_mock_smpltm = ("smptime")
+        # mock_smpltm_instance = MagicMock()
+        # mock_smpltm_instance.__init__.return_value = value_for_mock_smpltm
+        mock_smpltm.return_value = value_for_mock_smpltm
         mock_rest_time.return_value = value_for_mock_rest
         mock_work_time.return_value = value_for_mock_work
-        expected = value_for_mock_work, value_for_mock_rest
 
-        output = self.timer.work_and_rest_time()
+        # case 1: use_simpletime is False
+        expected = value_for_mock_work, value_for_mock_rest
+        output = self.timer.work_and_rest_time(use_simpletime=False)
 
         self.assertEqual(output, expected)
         mock_rest_time.assert_called_once()
         mock_work_time.assert_called_once()
+        mock_smpltm.assert_not_called()
+
+        # case 2: use_simpletime is True
+        expected = value_for_mock_smpltm, value_for_mock_smpltm
+        output = self.timer.work_and_rest_time(use_simpletime=True)
+
+        self.assertEqual(output, expected)
+        self.assertEqual(mock_rest_time.call_count, 2)
+        self.assertEqual(mock_work_time.call_count, 2)
+        mock_smpltm.assert_any_call(value_for_mock_work)
+        mock_smpltm.assert_any_call(value_for_mock_rest)
+
+    @patch('rationalbreaks.timers.timedelta')
+    def test_reset(self, mock_timedelta):
+        value_for_timedelta = "tdelta"
+        mock_timedelta.return_value = value_for_timedelta
+
+        expected_status = "Not started"
+
+        self.timer.reset()
+
+        self.assertEqual(self.timer.status(), expected_status)
+        self.assertEqual(self.timer._cycle_timestamps, [])
+        self.assertEqual(self.timer._current_cycle_time, value_for_timedelta)
+        self.assertEqual(self.timer._saved_work, value_for_timedelta)
+        self.assertEqual(self.timer._saved_rest, value_for_timedelta)
+
+
+class TestSimpleTime(TestCase):
+
+    def setUp(self):
+        input_time = timedelta(1)
+        self.smpltmr = SimpleTime
+
+    @patch('rationalbreaks.timers.SimpleTime._slice_to_time_units')
+    def test_init(self, mock_slice_time):
+        value_for_mock = (0, 2, 35, 15, 3)
+        mock_slice_time.return_value = value_for_mock
+        expected_seconds = value_for_mock[3] + value_for_mock[4] / 100
+
+        smpltm = SimpleTime(timedelta(0))
+
+        mock_slice_time.assert_called_once()
+        self.assertEqual(smpltm.timedelta, timedelta(0))
+        self.assertEqual(smpltm.days, value_for_mock[0])
+        self.assertEqual(smpltm.hours, value_for_mock[1])
+        self.assertEqual(smpltm.minutes, value_for_mock[2])
+        self.assertEqual(smpltm.full_seconds, value_for_mock[3])
+        self.assertEqual(smpltm.centi_seconds, value_for_mock[4])
+        self.assertEqual(smpltm.seconds, expected_seconds)
+
+    def test__slice_to_time_units(self):
+        pass
+
+    def test__str__(self):
+        pass
 
 
 if __name__ == '__main__':
