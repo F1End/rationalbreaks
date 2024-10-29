@@ -28,12 +28,6 @@ for state, value in sessions.items():
 # centering all elements
 left, center, right = st.columns(3)
 
-# with right:
-#     if st.session_state["rest_consumed"] and not st.session_state["alert"]["muted"]:
-#         if st.button("Mute alarm"):
-#             control.mute_alarm()
-#             st.rerun()
-
 with center:
 
     if st.session_state.status == "Not started":
@@ -55,17 +49,8 @@ with center:
         control.reset()
         st.rerun()
 
-    # if st.session_state["rest_consumed"] and not st.session_state["alert"]["muted"]:
-    #     if st.button("Mute alarm"):
-    #         control.mute_alarm()
-    # #         st.rerun()
-    print(st.session_state["rest_consumed"])
-    print(st.session_state["alert"]["muted"])
     if st.session_state["rest_consumed"] and not st.session_state["alert"]["muted"]:
-        print("About to alarm")
         alarm.play()
-        print("After alarm")
-        # st.rerun()
 
     mute_button = st.empty()
     if st.session_state["rest_consumed"] and not st.session_state["alert"]["muted"]:
