@@ -69,7 +69,7 @@ class RatioNalTimer:
     def set_ratio(self, new_ratio: float = 3):
         converted_to_float = float(new_ratio)
         self._ratio = converted_to_float
-        
+
     def _calculate_cycle_time(self):
         time_passed = datetime.now() - self._cycle_timestamps[-1]
         return time_passed
@@ -105,7 +105,7 @@ class RatioNalTimer:
 
     def work_and_rest_time(self, use_simpletime: bool = True) -> Union[timedelta, SimpleTime]:
         """
-        :param use_simpletime: If True will return SimpleTime object, if False, will return timedelta object
+        :param use_simpletime: If True will return SimpleTime objects, if False, will return timedelta objects
         :return:
         """
         if use_simpletime:

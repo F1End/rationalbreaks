@@ -16,13 +16,25 @@ st.markdown("""
 
 timer = st_front_objects.RatioNalTimerStreamlit()
 control = st_front_objects.StatusControl(timer)
+alarm = st_front_objects.Alarm()
+
+sessions = {"status": "Not started", "rest_consumed": False,
+            "alert": {"play_sound": True, "muted": False},
+            "refresh": False}
+for state, value in sessions.items():
+    if state not in st.session_state.keys():
+        st.session_state[state] = value
 
 # centering all elements
 left, center, right = st.columns(3)
 
+# with right:
+#     if st.session_state["rest_consumed"] and not st.session_state["alert"]["muted"]:
+#         if st.button("Mute alarm"):
+#             control.mute_alarm()
+#             st.rerun()
+
 with center:
-    if st.session_state.get("status", None) is None:
-        control.reset()
 
     if st.session_state.status == "Not started":
         if st.button("Start"):
@@ -43,4 +55,30 @@ with center:
         control.reset()
         st.rerun()
 
-    st_front_objects.display_timers(timer_instance=timer)
+    # if st.session_state["rest_consumed"] and not st.session_state["alert"]["muted"]:
+    #     if st.button("Mute alarm"):
+    #         control.mute_alarm()
+    # #         st.rerun()
+    print(st.session_state["rest_consumed"])
+    print(st.session_state["alert"]["muted"])
+    if st.session_state["rest_consumed"] and not st.session_state["alert"]["muted"]:
+        print("About to alarm")
+        alarm.play()
+        print("After alarm")
+        # st.rerun()
+
+    mute_button = st.empty()
+    if st.session_state["rest_consumed"] and not st.session_state["alert"]["muted"]:
+        if mute_button.button("Mute alarm"):
+            control.mute_alarm()
+        st.rerun()
+    else:
+        mute_button.empty()
+
+    work_time_display = st.empty()
+    rest_time_display = st.empty()
+    st_front_objects.display_timers(timer_instance=timer,
+                                    work_time_display=work_time_display,
+                                    rest_time_display=rest_time_display)
+
+st_front_objects.refresh_elements()
