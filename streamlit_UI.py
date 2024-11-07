@@ -20,7 +20,8 @@ alarm = st_front_objects.Alarm()
 
 sessions = {"status": "Not started", "rest_consumed": False,
             "alert": {"play_sound": True, "muted": False},
-            "refresh": False}
+            "refresh": False,
+            "reset_clicked": False}
 for state, value in sessions.items():
     if state not in st.session_state.keys():
         st.session_state[state] = value
@@ -29,7 +30,6 @@ for state, value in sessions.items():
 left, center, right = st.columns(3)
 
 with center:
-
     if st.session_state.status == "Not started":
         if st.button("Start"):
             control.start()
@@ -45,9 +45,22 @@ with center:
             control.continue_work()
             st.rerun()
 
-    if st.button("Reset timers"):
-        control.reset()
-        st.rerun()
+    if not st.session_state["reset_clicked"]:
+        if st.button("Reset timers"):
+            st.session_state["reset_clicked"] = True
+            st.rerun()
+    else:
+        st.write("Are you sure you want to reset?")
+        if st.button("Confirm"):
+            control.reset()
+            st.session_state["reset_clicked"] = False
+            st.session_state["refresh"] = True
+            # st.rerun()
+
+        if st.button("Cancel"):
+            st.session_state["reset_clicked"] = False
+            st.session_state["refresh"] = True
+            # st.rerun()
 
     if st.session_state["rest_consumed"] and not st.session_state["alert"]["muted"]:
         alarm.play()
@@ -64,6 +77,7 @@ with center:
     rest_time_display = st.empty()
     st_front_objects.display_timers(timer_instance=timer,
                                     work_time_display=work_time_display,
-                                    rest_time_display=rest_time_display)
+                                    rest_time_display=rest_time_display
+                                    )
 
-st_front_objects.refresh_elements()
+    st_front_objects.refresh_elements()

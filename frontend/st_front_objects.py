@@ -71,6 +71,7 @@ class StatusControl:
         self.timer.reset()
         st.session_state["status"] = "Not started"
         st.session_state["alert"]["muted"] = True
+        # st.session_state["refresh"] = True
 
     def mute_alarm(self):
         st.session_state["alert"]["muted"] = True
@@ -82,6 +83,7 @@ def refresh_elements() -> None:
     if st.session_state["refresh"]:
         st.session_state["refresh"] = False
         st.rerun()
+        sleep(0.1)
 
 
 def check_rest_consumed(timer_instance: RatioNalTimerStreamlit) -> bool:
@@ -95,6 +97,8 @@ def display_timers(timer_instance: RatioNalTimerStreamlit,
                    work_time_display,
                    rest_time_display,
                    update_per_sec: int = 10) -> None:
+    work_time_display = st.empty()
+    rest_time_display = st.empty()
     while True:
         work, rest = timer_instance.work_and_rest_time()
         work_time_display.metric("Worked time", str(work))
@@ -103,8 +107,15 @@ def display_timers(timer_instance: RatioNalTimerStreamlit,
         # to trigger alarm
         rest_consumed = check_rest_consumed(timer_instance)
 
-        if rest_consumed or st.session_state["refresh"]:
-            print("SHould break here")
+        # no need to loop here if there is no rest to update
+        if rest_consumed:
+            break
+
+        # clearing display to avoid shadowing (st rerun creates new objects)
+        if st.session_state["refresh"]:
+            print("Should break here")
+            work_time_display.empty()
+            rest_time_display.empty()
             break
 
         sleep(1 / update_per_sec)
