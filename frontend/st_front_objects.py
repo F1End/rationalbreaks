@@ -97,8 +97,8 @@ def display_timers(timer_instance: RatioNalTimerStreamlit,
                    work_time_display,
                    rest_time_display,
                    update_per_sec: int = 10) -> None:
-    work_time_display = st.empty()
-    rest_time_display = st.empty()
+    # work_time_display = st.empty()
+    # rest_time_display = st.empty()
     while True:
         work, rest = timer_instance.work_and_rest_time()
         work_time_display.metric("Worked time", str(work))

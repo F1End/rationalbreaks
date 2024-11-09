@@ -17,7 +17,7 @@ class SimpleTime:
         self.full_seconds = full_seconds
         self.centi_seconds = centi_seconds
 
-    def _slice_to_time_units(self) -> (int):
+    def _slice_to_time_units(self) -> (int, int, int, int, int):
         secs_per_day, secs_per_hour, secs_per_minute = 86400, 3600, 60  # constants
 
         days = self.timedelta.days

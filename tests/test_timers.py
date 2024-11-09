@@ -147,7 +147,7 @@ class TestRationalTimer(TestCase):
     def _test_status(self):
         self.assertEqual(self.timer.status(), self.timer._status)
 
-    @patch('rationalbreaks.timers.RatioNalTimer._calclate_cycle_time')
+    @patch('rationalbreaks.timers.RatioNalTimer._calculate_cycle_time')
     def _test_work_time(self, cycle_time_mock):
         # representing time calculation with integer operations
         # Case 1: Working
