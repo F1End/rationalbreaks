@@ -40,11 +40,14 @@ class SimpleTime:
 
     def __str__(self) -> str:
         if self.days == 1:
-            return f"{self.days} day {self.hours}:{self.minutes}:{self.full_seconds}:{self.centi_seconds}"
+            return f"{self.days} day {self.hours}:" \
+                   f"{self.minutes}:{self.full_seconds}:{self.centi_seconds}"
         if self.days > 1:
-            return f"{self.days} days {self.hours}:{self.minutes}:{self.full_seconds}:{self.centi_seconds}"
+            return f"{self.days} days {self.hours}:" \
+                   f"{self.minutes}:{self.full_seconds}:{self.centi_seconds}"
         if self.hours > 0:
-            return f"{self.hours:02}:{self.minutes:02}:{self.full_seconds:02}:{self.centi_seconds:02}"
+            return f"{self.hours:02}:" \
+                   f"{self.minutes:02}:{self.full_seconds:02}:{self.centi_seconds:02}"
         return f"{self.minutes:02}:{self.full_seconds:02}:{self.centi_seconds:02}"
 
     def to_string(self):
@@ -56,6 +59,10 @@ class SimpleTime:
 
 
 class RatioNalTimer:
+    """Main class that measures time after start is triggered and calculates the "deserved" rest
+    based on a specified ratio (defaults to 3 -> One third of the work time can be used as rest).
+    Can be stopped and restarted for breaks, time passed and available rest can be polled.
+    """
     def __init__(self, ratio: Optional[float] = None):
         self._ratio = float(ratio) if ratio is not None else float(3)
         self._status = "Not started"
@@ -137,6 +144,5 @@ class RatioNalTimer:
     def all_rest_consumed(self) -> bool:
         has_rest_started = True if len(self._cycle_timestamps) > 1 else False
         has_time_expired = True if self.rest_time() == timedelta(0) else False
-        if has_rest_started and has_time_expired:
-            return True
-        return False
+        is_consumed = has_rest_started and has_time_expired
+        return is_consumed

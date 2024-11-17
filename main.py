@@ -1,3 +1,5 @@
+"""Currently used for testing/mock-up, as not much point in running without UI"""
+
 # from datetime import datetime, timedelta
 # from time import sleep
 #

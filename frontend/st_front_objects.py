@@ -15,12 +15,14 @@ from rationalbreaks.timers import RatioNalTimer
 
 @st.cache_resource
 class RatioNalTimerStreamlit(RatioNalTimer):
+    """Caching timer instance for streamlit"""
     def __init__(self):
         super().__init__()
 
 
 @st.cache_resource
 class Alarm:
+    """Cached alarm that provides notification based on timer preferences."""
     def __init__(self, soundfile: Optional[path] = None):
         default_sound = path.join("resources", "ring_1.wav")
         self.soundfile = soundfile if soundfile else default_sound
@@ -48,7 +50,13 @@ class Alarm:
 
 
 class StatusControl:
+    """Class that changes the status of encapsulated cached timer
+    based on user interaction.
+    Technically it is compatible with RatioNalTimer, but in most
+    streamlit application it should be a cached version, as
+    defined above via class RatioNalTimerStreamlit
 
+    """
     def __init__(self, timer_instance: RatioNalTimer):
         self.timer = timer_instance
 
