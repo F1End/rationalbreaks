@@ -48,7 +48,7 @@ class SimpleTime:
         return f"{self.minutes:02}:{self.full_seconds:02}:{self.centi_seconds:02}"
 
     def to_string(self):
-        self.__str__()
+        return str(self)
 
     def to_timedelta(self):
         tdelta = deepcopy(self.timedelta)

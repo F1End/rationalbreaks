@@ -96,8 +96,7 @@ def check_rest_consumed(timer_instance: RatioNalTimerStreamlit) -> bool:
         st.session_state["rest_consumed"] = True
         st.session_state["refresh"] = True
         return True
-    else:
-        return False
+    return False
 
 
 def display_timers(timer_instance: RatioNalTimerStreamlit,
