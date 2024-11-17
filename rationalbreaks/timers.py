@@ -127,7 +127,7 @@ class RatioNalTimer:
 
     def work_and_rest_time(self, use_simpletime: bool = True) -> Union[timedelta, SimpleTime]:
         """
-        :param use_simpletime: If True will return SimpleTime objects, if False, will return timedelta objects
+        :param use_simpletime: If True returns SimpleTime objects, else returns timedelta objects
         :return:
         """
         if use_simpletime:
@@ -142,7 +142,7 @@ class RatioNalTimer:
         self._saved_rest = timedelta(0)
 
     def all_rest_consumed(self) -> bool:
-        has_rest_started = True if len(self._cycle_timestamps) > 1 else False
-        has_time_expired = True if self.rest_time() == timedelta(0) else False
+        has_rest_started = len(self._cycle_timestamps)
+        has_time_expired = self.rest_time() == timedelta(0)
         is_consumed = has_rest_started and has_time_expired
         return is_consumed

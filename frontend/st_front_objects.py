@@ -96,7 +96,6 @@ def refresh_elements() -> None:
     if st.session_state["refresh"]:
         st.session_state["refresh"] = False
         st.rerun()
-        sleep(0.1)
 
 
 def check_rest_consumed(timer_instance: RatioNalTimerStreamlit) -> bool:
