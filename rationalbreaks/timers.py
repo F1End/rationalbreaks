@@ -142,7 +142,7 @@ class RatioNalTimer:
         self._saved_rest = timedelta(0)
 
     def all_rest_consumed(self) -> bool:
-        has_rest_started = len(self._cycle_timestamps)
+        has_rest_started = bool(len(self._cycle_timestamps)) # 0 timestamp implies timer not started
         has_time_expired = self.rest_time() == timedelta(0)
         is_consumed = has_rest_started and has_time_expired
         return is_consumed
