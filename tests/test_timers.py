@@ -2,7 +2,6 @@ from unittest import TestCase, main as unittest_main
 from unittest.mock import patch, Mock, MagicMock
 from datetime import timedelta
 
-import rationalbreaks.timers
 from rationalbreaks.timers import RatioNalTimer, SimpleTime
 
 

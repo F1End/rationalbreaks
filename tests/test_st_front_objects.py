@@ -227,7 +227,7 @@ class TestCheckRestConsumed(TestCase):
         mock_session_state["rest_consumed"] = False
         expected_session_state_refresh = False
         expected_session_state_rest_consumed = False
-        expected_return = None
+        expected_return = False
 
         check = st_front_objects.check_rest_consumed(mock_timer)
         self.assertEqual(mock_session_state["refresh"], expected_session_state_refresh)
@@ -239,7 +239,7 @@ class TestCheckRestConsumed(TestCase):
         mock_session_state["status"] = "Resting"
         expected_session_state_refresh = False
         expected_session_state_rest_consumed = False
-        expected_return = None
+        expected_return = False
 
         check = st_front_objects.check_rest_consumed(mock_timer)
         self.assertEqual(mock_session_state["refresh"], expected_session_state_refresh)
@@ -251,7 +251,7 @@ class TestCheckRestConsumed(TestCase):
         mock_session_state["status"] = "Working"
         expected_session_state_refresh = False
         expected_session_state_rest_consumed = False
-        expected_return = None
+        expected_return = False
 
         check = st_front_objects.check_rest_consumed(mock_timer)
         self.assertEqual(mock_session_state["refresh"], expected_session_state_refresh)
