@@ -1,7 +1,7 @@
 """Run this file to kick off streamlit frontend locally on your browser"""
 
 import sys
-import os.path as path
+from os import path
 
 from streamlit.web import cli as stcli
 

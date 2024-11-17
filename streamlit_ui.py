@@ -1,3 +1,10 @@
+"""
+File to run for front-end web-application based on streamlit.
+Imports elements from st_front_objects
+Control flow overlaps st_front_objects module and this file
+"""
+
+
 import streamlit as st
 
 from frontend import st_front_objects
