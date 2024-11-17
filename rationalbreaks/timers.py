@@ -1,5 +1,14 @@
+"""
+This module hold the actual timer and its associated methods/classes.
+RatioNalTimer class is doing the primary interface,
+where all non-hidden (not starting with _) methods
+are the interfaces.
+There is also a SimpleTime class that is returned by one of the methods.
+Simplelclass is to allow easy display and storage of granual time variables.
+"""
 from datetime import datetime, timedelta
 from typing import Optional, Union
+from copy import deepcopy
 
 
 class SimpleTime:
@@ -32,12 +41,18 @@ class SimpleTime:
     def __str__(self) -> str:
         if self.days == 1:
             return f"{self.days} day {self.hours}:{self.minutes}:{self.full_seconds}:{self.centi_seconds}"
-        elif self.days > 1:
+        if self.days > 1:
             return f"{self.days} days {self.hours}:{self.minutes}:{self.full_seconds}:{self.centi_seconds}"
-        elif self.hours > 0:
+        if self.hours > 0:
             return f"{self.hours:02}:{self.minutes:02}:{self.full_seconds:02}:{self.centi_seconds:02}"
-        else:
-            return f"{self.minutes:02}:{self.full_seconds:02}:{self.centi_seconds:02}"
+        return f"{self.minutes:02}:{self.full_seconds:02}:{self.centi_seconds:02}"
+
+    def to_string(self):
+        self.__str__()
+
+    def to_timedelta(self):
+        tdelta = deepcopy(self.timedelta)
+        return tdelta
 
 
 class RatioNalTimer:
@@ -80,10 +95,10 @@ class RatioNalTimer:
     def work_time(self) -> timedelta:
         if self._status == "Working":
             return self._saved_work + self._calculate_cycle_time()
-        elif self._status == "Resting":
+        if self._status == "Resting":
             return self._saved_work
-        else:  # no cycle is running --> use saved only
-            return self._saved_work
+        # no cycle is running --> use saved only
+        return self._saved_work
 
     def _save_cycle_work(self):
         self._saved_work += self._calculate_cycle_time()
@@ -91,10 +106,10 @@ class RatioNalTimer:
     def rest_time(self) -> timedelta:
         if self._status == "Working":
             return self._saved_rest + (self._calculate_cycle_time() / self._ratio)
-        elif self._status == "Resting":
+        if self._status == "Resting":
             return self._calculate_remaining_rest()
-        else:  # no cycle is running --> use saved only
-            return self._saved_rest
+        # no cycle is running --> use saved only
+        return self._saved_rest
 
     def _calculate_remaining_rest(self) -> timedelta:
         remaining_rest = self._saved_rest - self._calculate_cycle_time()
@@ -110,8 +125,7 @@ class RatioNalTimer:
         """
         if use_simpletime:
             return SimpleTime(self.work_time()), SimpleTime(self.rest_time())
-        else:
-            return self.work_time(), self.rest_time()
+        return self.work_time(), self.rest_time()
 
     def reset(self) -> None:
         self._status = "Not started"
@@ -125,5 +139,4 @@ class RatioNalTimer:
         has_time_expired = True if self.rest_time() == timedelta(0) else False
         if has_rest_started and has_time_expired:
             return True
-        else:
-            return False
+        return False

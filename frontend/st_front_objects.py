@@ -1,3 +1,8 @@
+"""
+This module is for storing classes and functions used by streamlit front end.
+
+"""
+
 from time import sleep
 from os import path
 from typing import Optional
@@ -91,6 +96,8 @@ def check_rest_consumed(timer_instance: RatioNalTimerStreamlit) -> bool:
         st.session_state["rest_consumed"] = True
         st.session_state["refresh"] = True
         return True
+    else:
+        return False
 
 
 def display_timers(timer_instance: RatioNalTimerStreamlit,
