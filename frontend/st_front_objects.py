@@ -91,6 +91,12 @@ class StatusControl:
         st.session_state["refresh"] = True
         st.rerun()
 
+    def get_timer_ratio(self) -> float:
+        return self.timer.get_ratio()
+
+    def set_ratio(self, new_ratio: float):
+        self.timer.set_ratio(new_ratio)
+
 
 def refresh_elements() -> None:
     if st.session_state["refresh"]:
@@ -109,10 +115,9 @@ def check_rest_consumed(timer_instance: RatioNalTimerStreamlit) -> bool:
 def display_timers(timer_instance: RatioNalTimerStreamlit,
                    work_time_display,
                    rest_time_display,
-                   update_per_sec: int = 10) -> None:
-    # work_time_display = st.empty()
-    # rest_time_display = st.empty()
-    while True:
+                   update_per_sec: int = 2) -> None:
+    loop = True
+    while loop:
         work, rest = timer_instance.work_and_rest_time()
         work_time_display.metric("Worked time", str(work))
         rest_time_display.metric("Available rest", str(rest))
@@ -122,13 +127,16 @@ def display_timers(timer_instance: RatioNalTimerStreamlit,
 
         # no need to loop here if there is no rest to update
         if rest_consumed:
-            break
+            loop = False
 
         # clearing display to avoid shadowing (st rerun creates new objects)
-        if st.session_state["refresh"]:
+        if st.session_state["refresh"] and not rest_consumed:
             print("Should break here")
+            print("Displays:")
+            print(work_time_display)
+            print(rest_time_display)
             work_time_display.empty()
             rest_time_display.empty()
-            break
+            loop = False
 
         sleep(1 / update_per_sec)
