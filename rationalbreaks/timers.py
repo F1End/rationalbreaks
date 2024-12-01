@@ -13,7 +13,7 @@ from copy import deepcopy
 
 class SimpleTime:
     """This class exists to convert timedelta to easily displayable units.
-    Assumes that dimedelta is positive.
+    Assumes that timedelta is positive.
     """
 
     def __init__(self, time: timedelta):
