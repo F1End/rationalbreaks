@@ -4,7 +4,7 @@ RatioNalTimer class is doing the primary interface,
 where all non-hidden (not starting with _) methods
 are the interfaces.
 There is also a SimpleTime class that is returned by one of the methods.
-Simplelclass is to allow easy display and storage of granual time variables.
+SimpleTime class is to allow easy display and storage of granual time variables.
 """
 from datetime import datetime, timedelta
 from typing import Optional, Union
