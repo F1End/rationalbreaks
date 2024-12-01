@@ -160,14 +160,12 @@ class TestStatusControl(TestCase):
     def test_continue_work(self, mock_session_state):
         expected_val_status = "Working"
         expected_val_muted = True
-        expected_val_refresh = True
         mock_session_state["alert"] = {"muted": True}
 
         self.control.continue_work()
 
         self.assertEqual(mock_session_state["status"], expected_val_status)
         self.assertEqual(mock_session_state["alert"]["muted"], expected_val_muted)
-        self.assertEqual(mock_session_state["refresh"], expected_val_refresh)
         self.mock_timer_instance.continue_work.assert_called_once()
 
     def test_stop(self):
@@ -188,32 +186,11 @@ class TestStatusControl(TestCase):
     @patch('frontend.st_front_objects.st.rerun')
     def test_mute_alarm(self, mock_st_rerun, mock_session_state):
         expected_val_muted = True
-        expected_val_refresh = True
         mock_session_state["alert"] = {"muted": False}
 
         self.control.mute_alarm()
-        self.assertEqual(mock_session_state["refresh"], expected_val_refresh)
         self.assertEqual(mock_session_state["alert"]["muted"], expected_val_muted)
         mock_st_rerun.assert_called_once()
-
-
-class TestRefreshElements(TestCase):
-    @patch('frontend.st_front_objects.st.session_state', new_callable=dict)
-    @patch('frontend.st_front_objects.st.rerun')
-    def test_refresh_elements(self, mock_rerun, mock_session_state):
-        # Case 1: "Refresh" is False:
-        mock_session_state["refresh"] = False
-
-        st_front_objects.refresh_elements()
-        self.assertEqual(mock_session_state["refresh"], False)
-        mock_rerun.assert_not_called()
-
-        # Case 2: "Refresh" is True:
-        mock_session_state["refresh"] = True
-
-        st_front_objects.refresh_elements()
-        self.assertEqual(mock_session_state["refresh"], False)
-        mock_rerun.assert_called_once()
 
 class TestCheckRestConsumed(TestCase):
     @patch('frontend.st_front_objects.st.session_state', new_callable=dict)
@@ -223,50 +200,41 @@ class TestCheckRestConsumed(TestCase):
         # Case 1: All rest consumed, not resting
         mock_timer.all_rest_consumed.return_value = True
         mock_session_state["status"] = "Working"
-        mock_session_state["refresh"] = False
         mock_session_state["rest_consumed"] = False
-        expected_session_state_refresh = False
         expected_session_state_rest_consumed = False
         expected_return = False
 
         check = st_front_objects.check_rest_consumed(mock_timer)
-        self.assertEqual(mock_session_state["refresh"], expected_session_state_refresh)
         self.assertEqual(mock_session_state["rest_consumed"], expected_session_state_rest_consumed)
         self.assertEqual(check, expected_return)
 
         # Case 2: Not yet consumed all rest, resting is true
         mock_timer.all_rest_consumed.return_value = False
         mock_session_state["status"] = "Resting"
-        expected_session_state_refresh = False
         expected_session_state_rest_consumed = False
         expected_return = False
 
         check = st_front_objects.check_rest_consumed(mock_timer)
-        self.assertEqual(mock_session_state["refresh"], expected_session_state_refresh)
         self.assertEqual(mock_session_state["rest_consumed"], expected_session_state_rest_consumed)
         self.assertEqual(check, expected_return)
 
         # Case 3: Not yet consumed all rest, not resting
         mock_timer.all_rest_consumed.return_value = False
         mock_session_state["status"] = "Working"
-        expected_session_state_refresh = False
         expected_session_state_rest_consumed = False
         expected_return = False
 
         check = st_front_objects.check_rest_consumed(mock_timer)
-        self.assertEqual(mock_session_state["refresh"], expected_session_state_refresh)
         self.assertEqual(mock_session_state["rest_consumed"], expected_session_state_rest_consumed)
         self.assertEqual(check, expected_return)
 
         # Case 4: All rest consumed, resting is true
         mock_timer.all_rest_consumed.return_value = True
         mock_session_state["status"] = "Resting"
-        expected_session_state_refresh = True
         expected_session_state_rest_consumed = True
         expected_return = True
 
         check = st_front_objects.check_rest_consumed(mock_timer)
-        self.assertEqual(mock_session_state["refresh"], expected_session_state_refresh)
         self.assertEqual(mock_session_state["rest_consumed"], expected_session_state_rest_consumed)
         self.assertEqual(check, expected_return)
 

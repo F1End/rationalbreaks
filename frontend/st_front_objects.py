@@ -37,7 +37,6 @@ class Alarm:
             self.play_object = self.player.play()
         if not self.play_object.is_playing():
             self.play_object = self.player.play()
-        sleep(0.1)
 
     def stop(self):
         self.play_object.stop()
@@ -75,7 +74,6 @@ class StatusControl:
         self.timer.continue_work()
         st.session_state["status"] = "Working"
         st.session_state["alert"]["muted"] = True
-        st.session_state["refresh"] = True
 
     def stop(self):
         pass
@@ -84,11 +82,9 @@ class StatusControl:
         self.timer.reset()
         st.session_state["status"] = "Not started"
         st.session_state["alert"]["muted"] = True
-        # st.session_state["refresh"] = True
 
     def mute_alarm(self):
         st.session_state["alert"]["muted"] = True
-        st.session_state["refresh"] = True
         st.rerun()
 
     def get_timer_ratio(self) -> float:
@@ -98,16 +94,9 @@ class StatusControl:
         self.timer.set_ratio(new_ratio)
 
 
-def refresh_elements() -> None:
-    if st.session_state["refresh"]:
-        st.session_state["refresh"] = False
-        st.rerun()
-
-
 def check_rest_consumed(timer_instance: RatioNalTimerStreamlit) -> bool:
     if timer_instance.all_rest_consumed() and st.session_state["status"] == "Resting":
         st.session_state["rest_consumed"] = True
-        st.session_state["refresh"] = True
         return True
     return False
 
@@ -115,7 +104,7 @@ def check_rest_consumed(timer_instance: RatioNalTimerStreamlit) -> bool:
 def display_timers(timer_instance: RatioNalTimerStreamlit,
                    work_time_display,
                    rest_time_display,
-                   update_per_sec: int = 2) -> None:
+                   update_per_sec: int = 10) -> None:
     loop = True
     while loop:
         work, rest = timer_instance.work_and_rest_time()
@@ -125,18 +114,11 @@ def display_timers(timer_instance: RatioNalTimerStreamlit,
         # to trigger alarm
         rest_consumed = check_rest_consumed(timer_instance)
 
-        # no need to loop here if there is no rest to update
-        if rest_consumed:
-            loop = False
+        alarm_active = not st.session_state.alert["muted"] and st.session_state.alert["play_sound"]
 
-        # clearing display to avoid shadowing (st rerun creates new objects)
-        if st.session_state["refresh"] and not rest_consumed:
-            print("Should break here")
-            print("Displays:")
-            print(work_time_display)
-            print(rest_time_display)
-            work_time_display.empty()
-            rest_time_display.empty()
+        # interrupting loop of we are resting and alarm needs to be played (outside loop)
+        if rest_consumed and alarm_active:
             loop = False
+            st.rerun()
 
         sleep(1 / update_per_sec)
