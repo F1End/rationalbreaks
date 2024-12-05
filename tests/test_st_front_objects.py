@@ -24,7 +24,7 @@ class TestAlarm(TestCase):
 
     def test_init_values(self):
         default_path_elements = "resources", "ring_1.wav"
-        expected_path = path.abspath(path.join(*default_path_elements))
+        expected_path = path.join(*default_path_elements)
         expected_play_object_at_init = None
 
         self.assertEqual(self.alarm.soundfile, expected_path)

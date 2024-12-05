@@ -24,13 +24,12 @@ class RatioNalTimerStreamlit(RatioNalTimer):
 class Alarm:
     """Cached alarm that provides notification based on timer preferences."""
     def __init__(self, soundfile: Optional[path] = None):
-        default_sound = path.abspath(path.join("resources", "ring_1.wav"))
+        default_sound = path.join("resources", "ring_1.wav")
         self.soundfile = soundfile if soundfile else default_sound
         self.player = self.create_player()
         self.play_object = None
 
     def create_player(self):
-        print(self.soundfile)
         return sa.WaveObject.from_wave_file(self.soundfile)
 
     def play(self):
