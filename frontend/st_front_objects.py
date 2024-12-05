@@ -4,7 +4,7 @@ This module is for storing classes and functions used by streamlit front end.
 """
 
 from time import sleep
-from os import path
+from os import path, chdir
 from typing import Optional
 
 import streamlit as st
@@ -35,6 +35,7 @@ class Alarm:
 
     def create_player(self):
         print(f"#Creating player with {self.soundfile}")
+        print(f"#Dir name {path.dirname(self.soundfile)}")
         return sa.WaveObject.from_wave_file(self.soundfile)
 
     def play(self):
