@@ -25,6 +25,10 @@ class Alarm:
     """Cached alarm that provides notification based on timer preferences."""
     def __init__(self, soundfile: Optional[path] = None):
         default_sound = path.join("resources", "ring_1.wav")
+        root = path.abspath(default_sound)
+        print(f"Root {root}")
+        root2 = path.abspath('streamlit_ui.py')
+        print(f"Root2 {root2}")
         self.soundfile = soundfile if soundfile else default_sound
         self.player = self.create_player()
         self.play_object = None
