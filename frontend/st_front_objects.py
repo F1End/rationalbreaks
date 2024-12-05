@@ -30,9 +30,11 @@ class Alarm:
         self.play_object = None
 
     def create_player(self):
+        print(f"#Creating player with {self.soundfile}")
         return sa.WaveObject.from_wave_file(self.soundfile)
 
     def play(self):
+        print(f"#Running player with {self.soundfile}")
         if self.play_object is None:
             self.play_object = self.player.play()
         if not self.play_object.is_playing():
