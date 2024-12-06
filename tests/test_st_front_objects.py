@@ -23,8 +23,9 @@ class TestAlarm(TestCase):
         self.alarm = st_front_objects.Alarm()
 
     def test_init_values(self):
-        default_path_elements = "resources", "ring_1.wav"
-        expected_path = path.join(*default_path_elements)
+        # default_path_elements = "resources", "ring_1_default.wav"
+        # expected_path = path.join(*default_path_elements)
+        expected_path = "ring_1_default.wav"
         expected_play_object_at_init = None
 
         self.assertEqual(self.alarm.soundfile, expected_path)
