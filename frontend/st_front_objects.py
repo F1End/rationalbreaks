@@ -35,8 +35,8 @@ class Alarm:
         self.play_object = None
 
     def create_player(self):
-        testcmd = subprocess.check_call(["ls", "-lhtr"])
-        testcmd2 = subprocess.check_call(["pwd"])
+        testcmd = subprocess.check_output(["ls", "-lhtr"])
+        testcmd2 = subprocess.check_output(["pwd"])
         print(f"ls output:\n {testcmd}")
         print(f"\n owdoutput:\n {testcmd2}\n")
         print(f"#Creating player with {self.soundfile}")
