@@ -6,6 +6,7 @@ This module is for storing classes and functions used by streamlit front end.
 from time import sleep
 from os import path, chdir
 from typing import Optional
+import subprocess
 
 import streamlit as st
 import simpleaudio as sa
@@ -34,6 +35,10 @@ class Alarm:
         self.play_object = None
 
     def create_player(self):
+        testcmd = subprocess.check_call(["ls", "-lhtr"])
+        testcmd2 = subprocess.check_call(["pwd"])
+        print(f"ls output:\n {testcmd}")
+        print(f"\n owdoutput:\n {testcmd2}\n")
         print(f"#Creating player with {self.soundfile}")
         print(f"#Dir name {path.dirname(self.soundfile)}")
         return sa.WaveObject.from_wave_file(self.soundfile)
