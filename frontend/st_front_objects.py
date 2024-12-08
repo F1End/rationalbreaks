@@ -37,8 +37,10 @@ class Alarm:
     def create_player(self):
         testcmd = subprocess.check_output(["ls", "-lhtr"])
         testcmd2 = subprocess.check_output(["pwd"])
+        testcmd3 = subprocess.check_output(["ls", "ring_1_default.wav"])
         print(f"ls output:\n {testcmd}")
-        print(f"\n owdoutput:\n {testcmd2}\n")
+        print(f"\n pwd output:\n {testcmd2}")
+        print(f"\n ls ring_1_default.wav output: {testcmd3}")
         print(f"#Creating player with {self.soundfile}")
         print(f"#Dir name {path.dirname(self.soundfile)}")
         return sa.WaveObject.from_wave_file(self.soundfile)
