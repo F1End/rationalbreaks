@@ -9,21 +9,12 @@ import streamlit as st
 
 from frontend import st_front_objects
 
-# Button size styling
-st.markdown("""
-    <style>
-    div.stButton > button {
-        height: 30px;
-        width: 220px;
-        font-size: 25px
-    }
-    </style>
-    """, unsafe_allow_html=True)
+st.markdown(st_front_objects.format_buttons_html, unsafe_allow_html=True)
 
-timer = st_front_objects.RatioNalTimerStreamlit()
+
+timer = st_front_objects.RatioNalTimerStreamlit()  # cached
 control = st_front_objects.StatusControl(timer)
-alarm = st_front_objects.Alarm()
-
+alarm = st_front_objects.Alarm()  # cached
 
 sessions = {"status": "Not started", "rest_consumed": False,
             "alert": {"play_sound": True, "muted": False},
@@ -33,16 +24,18 @@ for state, value in sessions.items():
     if state not in st.session_state.keys():
         st.session_state[state] = value
 
+# Initiating player element here (JS)
+# This pushes down the other buttons a bit, should be on top or bottom
+alarm.load_player_html()
+
 # centering all elements
 left, center, right = st.columns(3)
 
 with center:
-    # Settings
+    # Settings section
     settings_container = st.container(border=False)
-    settings_widget1 = settings_container.empty()
-    settings_widget2 = settings_container.empty()
-    settings_widget3 = settings_container.empty()
-    settings_widget4 = settings_container.empty()
+    settings_widget1, settings_widget2, settings_widget3, settings_widget4 = \
+        (settings_container.empty() for i in range(4))
 
     if st.session_state.settings_clicked is False:
         if settings_widget1.button("Settings"):
@@ -67,7 +60,7 @@ with center:
             st.session_state["alert"]["play_sound"] = alarm_sound
             st.rerun()
 
-    # Status
+    # Status section
     status_container = st.container()
     status_widget1 = status_container.empty()
 
@@ -86,11 +79,9 @@ with center:
             control.continue_work()
             st.rerun()
 
-    # Reset
+    # Reset section
     reset_container = st.container(border=False)
-    reset_widget1 = reset_container.empty()
-    reset_widget2 = reset_container.empty()
-    reset_widget3 = reset_container.empty()
+    reset_widget1, reset_widget2, reset_widget3 = (reset_container.empty() for i in range(3))
 
     if not st.session_state["reset_clicked"]:
         if reset_widget1.button("Reset timers"):
@@ -107,16 +98,19 @@ with center:
             st.session_state["reset_clicked"] = False
             st.rerun()
 
-    # Alarm
+    # Alarm section
+    # Alarm: mute button
     alarm_container = st.container()
     alarm_widget1 = st.empty()
     if st.session_state["rest_consumed"] and not st.session_state.alert["muted"]:
         if alarm_widget1.button("Mute alarm"):
             control.mute_alarm()
             st.rerun()
+
+    # Alarm: We are looping here while alarm is playing
     while st.session_state["rest_consumed"] and not st.session_state.alert["muted"]:
-        alarm.play()
-        sleep(0.2)
+        sleep(1)
+        st.rerun()
 
     # Display
     work_time_display = st.empty()

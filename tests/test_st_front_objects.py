@@ -16,101 +16,192 @@ class TestRationalTimerStreamlit(TestCase):
 
 class TestAlarm(TestCase):
     @patch('frontend.st_front_objects.st.cache_resource', lambda x: x)
-    @patch('frontend.st_front_objects.sa.WaveObject.from_wave_file')
-    def setUp(self, mock_from_wave_file):
-        mocked_player = MagicMock()
-        mock_from_wave_file.return_value = mocked_player
+    @patch('frontend.st_front_objects.open')
+    @patch('frontend.st_front_objects.b64encode')
+    def setUp(self, b64enc_mock, mock_open):
+        mocked_file = MagicMock()
+        mocked_file.read.return_value = "Read audio file data"
+        mock_b64 = MagicMock()
+        mock_b64.decode.return_value = "Decoded b64"  # Expeted init value
+        b64enc_mock.return_value = mock_b64
+        mock_open.return_value = mocked_file
+
         self.alarm = st_front_objects.Alarm()
 
     def test_init_values(self):
         default_path_elements = "resources", "ring_1.wav"
         expected_path = path.join(*default_path_elements)
-        expected_play_object_at_init = None
+        expected_audio_base64 = "Decoded b64"  # from setUP
 
         self.assertEqual(self.alarm.soundfile, expected_path)
-        self.assertEqual(self.alarm.play_object, expected_play_object_at_init)
+        self.assertEqual(self.alarm.audio_base64, expected_audio_base64)
 
-    @patch('frontend.st_front_objects.sa.WaveObject.from_wave_file')
-    def test_create_player(self, mock_from_wave_file):
-        mocked_return_val = "mocked_player"
-        mock_from_wave_file.return_value = mocked_return_val
-        player = self.alarm.create_player()
-        self.assertEqual(player, mocked_return_val)
+    @patch('frontend.st_front_objects.open')
+    @patch('frontend.st_front_objects.b64encode')
+    def test_encode_audio(self, b64enc_mock, mock_open):
+        mocked_file = MagicMock()
+        mock_file_read_value = "Read audio file data"
+        mocked_file.read.return_value = mock_file_read_value
+        mock_b64 = MagicMock()
+        decoded_value = "Decoded b64"
+        mock_b64.decode.return_value = decoded_value  # Expeted init value
+        b64enc_mock.return_value = mock_b64
+        mock_open.return_value.__enter__.return_value = mocked_file
 
-    def test_play(self):
-        # Case 1: Not played yet (no play_object)
-        self.alarm.play_object = None
-        player_mock = MagicMock()
-        play_object_mock = MagicMock()
-        player_mock.play.return_value = play_object_mock
-        self.alarm.player = player_mock
+        returned_value = self.alarm.encode_audio()
 
-        self.alarm.play()
+        mock_open.assert_called_with(self.alarm.soundfile, "rb")
+        mocked_file.read.assert_called_once()
+        b64enc_mock.assert_called_with(mock_file_read_value)
+        mock_b64.decode.assert_called_once()
+        self.assertEqual(returned_value, decoded_value)
 
-        self.assertEqual(self.alarm.play_object, play_object_mock)
-        player_mock.play.assert_called_once()
+    @patch('frontend.st_front_objects.st.session_state')
+    def test_trigger_audio(self, mock_session_state):
+        # Case 1 play_sound is True, muted is False, rest_consumed is True -> true
+        # This is the only true case!
+        mock_session_state.alert = {"play_sound": True, "muted": False}
+        mock_session_state.rest_consumed = True
+        expected_value = "true"
+        returned_value = self.alarm.trigger_audio()
+        self.assertEqual(returned_value, expected_value)
 
-        # Case 2: Sound is being played: Play object exists, is_playing is True
-        player_mock_2 = MagicMock()
-        play_object_mock_2 = MagicMock()
-        play_object_mock_2.is_playing.return_value = True
-        self.alarm.play_object = play_object_mock_2
-        mock_return_value = "Should not have been called"
-        player_mock_2.play.return_value = mock_return_value
-        self.alarm.player = player_mock_2
+        # Case 2: play_sound is True, muted is True, rest_consumed is False -> false
+        mock_session_state.alert = {"play_sound": True, "muted": True}
+        mock_session_state.rest_consumed = False
+        expected_value = "false"
+        returned_value = self.alarm.trigger_audio()
+        self.assertEqual(returned_value, expected_value)
 
-        self.alarm.play()
+        # Case 3: play_sound is False, muted is True, rest_consumed is True -> false
+        mock_session_state.alert = {"play_sound": False, "muted": True}
+        mock_session_state.rest_consumed = True
+        expected_value = "false"
+        returned_value = self.alarm.trigger_audio()
+        self.assertEqual(returned_value, expected_value)
 
-        self.assertEqual(self.alarm.play_object, play_object_mock_2)
-        player_mock_2.play.assert_not_called()
-        self.assertNotEqual(self.alarm.play_object, mock_return_value)
+        # Case 4: play_sound is False, muted is False, rest_consumed is True -> false
+        mock_session_state.alert = {"play_sound": False, "muted": False}
+        mock_session_state.rest_consumed = True
+        expected_value = "false"
+        returned_value = self.alarm.trigger_audio()
+        self.assertEqual(returned_value, expected_value)
 
-        # Case 3: Sound is ended and should be replayed: Play object exists, is_playing is False
-        player_mock_3 = MagicMock()
-        play_object_mock_3 = MagicMock()
-        play_object_mock_3.is_playing.return_value = False
-        self.alarm.play_object = play_object_mock_3
-        mock_return_value = MagicMock()
-        player_mock_3.play.return_value = mock_return_value
-        self.alarm.player = player_mock_3
+        # Case 5: play_sound is True, muted is False, rest_consumed is False -> false
+        mock_session_state.alert = {"play_sound": True, "muted": False}
+        mock_session_state.rest_consumed = False
+        expected_value = "false"
+        returned_value = self.alarm.trigger_audio()
+        self.assertEqual(returned_value, expected_value)
 
-        self.alarm.play()
+        # Case 6: play_sound is False, muted is True, rest_consumed is False -> false
+        mock_session_state.alert = {"play_sound": False, "muted": True}
+        mock_session_state.rest_consumed = False
+        expected_value = "false"
+        returned_value = self.alarm.trigger_audio()
+        self.assertEqual(returned_value, expected_value)
+##
+        # Case 7: play_sound is True, muted is True, rest_consumed is True -> false
+        mock_session_state.alert = {"play_sound": True, "muted": True}
+        mock_session_state.rest_consumed = True
+        expected_value = "false"
+        returned_value = self.alarm.trigger_audio()
+        self.assertEqual(returned_value, expected_value)
 
-        self.assertEqual(self.alarm.play_object, mock_return_value)
-        player_mock_3.play.assert_called_once()
+        # Case 8: play_sound is False, muted is False, rest_consumed is False -> false
+        mock_session_state.alert = {"play_sound": False, "muted": False}
+        mock_session_state.rest_consumed = False
+        expected_value = "false"
+        returned_value = self.alarm.trigger_audio()
+        self.assertEqual(returned_value, expected_value)
 
-    def test_stop(self):
-        mock_play_object = MagicMock()
-        self.alarm.play_object = mock_play_object
+    @patch('frontend.st_front_objects.st.components.v1.html')
+    @patch('frontend.st_front_objects.st.session_state')
+    # @patch.object(st_front_objects.Alarm, 'trigger_audio')
+    def test_load_player_html(self, mock_session_state, st_html_mock):
+        # Case 1: default refresh; trigger is true -> alarm will play
+        mock_session_state.alert = {"play_sound": True, "muted": False}
+        mock_session_state.rest_consumed = True
+        alarm = st_front_objects.Alarm()
+        expected_string = \
+            f"""
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js">
+            </script>
+            <script>
+            const sound = new Howl({{
+                src: ['data:audio/wav;base64,{self.alarm.audio_base64}']
+            }});
+    
+            // Monitor Streamlit for playback trigger
+            const checkPlayback = () => {{
+                const playAudio = true;
+                if (playAudio) {{
+                    sound.play();
+                }}
+            }};
+    
+            // Poll the server for updates every "refresh_frequency" ms
+            setInterval(checkPlayback, 1000);
+            </script>
+            """
+        alarm.load_player_html()
+        st_html_mock.assert_called_with(expected_string, height=1)
 
-        self.alarm.stop()
+        # Case 2: default refresh; trigger is false -> alarm will NOT play
+        mock_session_state.alert = {"play_sound": True, "muted": False}
+        mock_session_state.rest_consumed = False
+        alarm = st_front_objects.Alarm()
+        expected_string = \
+            f"""
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js">
+            </script>
+            <script>
+            const sound = new Howl({{
+                src: ['data:audio/wav;base64,{self.alarm.audio_base64}']
+            }});
+    
+            // Monitor Streamlit for playback trigger
+            const checkPlayback = () => {{
+                const playAudio = false;
+                if (playAudio) {{
+                    sound.play();
+                }}
+            }};
+    
+            // Poll the server for updates every "refresh_frequency" ms
+            setInterval(checkPlayback, 1000);
+            </script>
+            """
+        alarm.load_player_html()
+        st_html_mock.assert_called_with(expected_string, height=1)
 
-        mock_play_object.stop.assert_called_once()
-
-    def test_toogle(self):
-        # Case 1: sound is being played
-        mock_play_object = MagicMock()
-        mock_play_object.is_playing.return_value = True
-        self.alarm.play_object = mock_play_object
-
-        self.alarm.toogle()
-
-        mock_play_object.is_playing.assert_called_once()
-        mock_play_object.stop.assert_called_once()
-        mock_play_object.play.assert_not_called()
-
-        # Case 2: sound is not being played at the moment
-        mock_play_object2 = MagicMock()
-        mock_play_object2.is_playing.return_value = False
-        mock_player = MagicMock()
-        self.alarm.player = mock_player
-        self.alarm.play_object = mock_play_object2
-
-        self.alarm.toogle()
-
-        mock_play_object2.is_playing.assert_called_once()
-        mock_play_object2.stop.assert_not_called()
-        mock_player.play.assert_called_once()
+        # Case 3: set refresh value; trigger is true -> alarm will play
+        mock_session_state.alert = {"play_sound": True, "muted": False}
+        mock_session_state.rest_consumed = True
+        alarm = st_front_objects.Alarm()
+        expected_string = \
+            f"""
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js">
+            </script>
+            <script>
+            const sound = new Howl({{
+                src: ['data:audio/wav;base64,{self.alarm.audio_base64}']
+            }});
+    
+            // Monitor Streamlit for playback trigger
+            const checkPlayback = () => {{
+                const playAudio = true;
+                if (playAudio) {{
+                    sound.play();
+                }}
+            }};
+    
+            // Poll the server for updates every "refresh_frequency" ms
+            setInterval(checkPlayback, 500);
+            </script>
+            """
+        alarm.load_player_html(refresh_frequency=500)
+        st_html_mock.assert_called_with(expected_string, height=1)
 
 
 class TestStatusControl(TestCase):
@@ -192,6 +283,7 @@ class TestStatusControl(TestCase):
         self.assertEqual(mock_session_state["alert"]["muted"], expected_val_muted)
         mock_st_rerun.assert_called_once()
 
+
 class TestCheckRestConsumed(TestCase):
     @patch('frontend.st_front_objects.st.session_state', new_callable=dict)
     def test_check_rest_consumed(self, mock_session_state):
@@ -237,6 +329,7 @@ class TestCheckRestConsumed(TestCase):
         check = st_front_objects.check_rest_consumed(mock_timer)
         self.assertEqual(mock_session_state["rest_consumed"], expected_session_state_rest_consumed)
         self.assertEqual(check, expected_return)
+
 
 class TestDisplayTimers(TestCase):
     @patch('frontend.st_front_objects.check_rest_consumed')

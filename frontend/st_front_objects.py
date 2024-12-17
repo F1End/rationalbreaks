@@ -6,9 +6,9 @@ This module is for storing classes and functions used by streamlit front end.
 from time import sleep
 from os import path
 from typing import Optional
+from base64 import b64encode
 
 import streamlit as st
-import simpleaudio as sa
 
 from rationalbreaks.timers import RatioNalTimer
 
@@ -26,26 +26,48 @@ class Alarm:
     def __init__(self, soundfile: Optional[path] = None):
         default_sound = path.join("resources", "ring_1.wav")
         self.soundfile = soundfile if soundfile else default_sound
-        self.player = self.create_player()
-        self.play_object = None
+        self.audio_base64 = self.encode_audio()
 
-    def create_player(self):
-        return sa.WaveObject.from_wave_file(self.soundfile)
+    def encode_audio(self):
+        with open(self.soundfile, "rb") as audio_file:
+            audio_bytes = audio_file.read()
+            audio_base64 = b64encode(audio_bytes).decode()
+            return audio_base64
 
-    def play(self):
-        if self.play_object is None:
-            self.play_object = self.player.play()
-        if not self.play_object.is_playing():
-            self.play_object = self.player.play()
+    def trigger_audio(self):
+        """
+        Evaluate session_states and return value inserted into JS code.
+        :return: lower case string imitating js boolean
+        """
+        play_alarm = st.session_state.alert["play_sound"] is True \
+            and st.session_state.alert["muted"] is False \
+            and st.session_state.rest_consumed is True
+        formatted_to_js = str(play_alarm).lower()
+        return formatted_to_js
 
-    def stop(self):
-        self.play_object.stop()
-
-    def toogle(self):
-        if self.play_object.is_playing():
-            self.play_object.stop()
-        else:
-            self.player.play()
+    def load_player_html(self, refresh_frequency: int = 1000):
+        st.components.v1.html(
+            f"""
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js">
+            </script>
+            <script>
+            const sound = new Howl({{
+                src: ['data:audio/wav;base64,{self.audio_base64}']
+            }});
+    
+            // Monitor Streamlit for playback trigger
+            const checkPlayback = () => {{
+                const playAudio = {self.trigger_audio()};
+                if (playAudio) {{
+                    sound.play();
+                }}
+            }};
+    
+            // Poll the server for updates every "refresh_frequency" ms
+            setInterval(checkPlayback, {refresh_frequency});
+            </script>
+            """,
+            height=1)
 
 
 class StatusControl:
@@ -116,9 +138,22 @@ def display_timers(timer_instance: RatioNalTimerStreamlit,
 
         alarm_active = not st.session_state.alert["muted"] and st.session_state.alert["play_sound"]
 
-        # interrupting loop of we are resting and alarm needs to be played (outside loop)
+        # interrupting loop if we are resting and alarm needs to be played (outside loop)
         if rest_consumed and alarm_active:
             loop = False
             st.rerun()
 
         sleep(1 / update_per_sec)
+
+
+"""Non-python code injection elements below"""
+
+format_buttons_html = """
+    <style>
+    div.stButton > button {
+        height: 30px;
+        width: 220px;
+        font-size: 25px
+    }
+    </style>
+    """
