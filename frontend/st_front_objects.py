@@ -146,9 +146,7 @@ def display_timers(timer_instance: RatioNalTimerStreamlit,
         sleep(1 / update_per_sec)
 
 
-"""Non-python code injection elements below"""
-
-format_buttons_html = """
+FORMAT_BUTTONS_HTML = """
     <style>
     div.stButton > button {
         height: 30px;

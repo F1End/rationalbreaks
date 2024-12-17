@@ -9,7 +9,7 @@ import streamlit as st
 
 from frontend import st_front_objects
 
-st.markdown(st_front_objects.format_buttons_html, unsafe_allow_html=True)
+st.markdown(st_front_objects.FORMAT_BUTTONS_HTML, unsafe_allow_html=True)
 
 
 timer = st_front_objects.RatioNalTimerStreamlit()  # cached
