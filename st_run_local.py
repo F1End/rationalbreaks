@@ -5,6 +5,9 @@ from os import path
 
 from streamlit.web import cli as stcli
 
-if __name__ == '__main__':
+def main():
     sys.argv = ["streamlit", "run", path.join("streamlit_ui.py")]
     sys.exit(stcli.main())
+
+if __name__ == '__main__':
+    main()

@@ -1,10 +1,6 @@
 """Currently used for testing/mock-up, as not much point in running without UI"""
 
-# from datetime import datetime, timedelta
-# from time import sleep
-#
-# from frontend import st_front_objects
-# from rationalbreaks import timers
+import st_run_local
 
 if __name__ == "__main__":
-    pass
+    st_run_local.main()
