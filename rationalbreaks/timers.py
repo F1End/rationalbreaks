@@ -26,6 +26,13 @@ class SimpleTime:
         self.full_seconds = full_seconds
         self.centi_seconds = centi_seconds
 
+    def to_string(self):
+        return str(self)
+
+    def to_timedelta(self):
+        tdelta = deepcopy(self.timedelta)
+        return tdelta
+
     def _slice_to_time_units(self) -> (int, int, int, int, int):
         secs_per_day, secs_per_hour, secs_per_minute = 86400, 3600, 60  # constants
 
@@ -49,13 +56,6 @@ class SimpleTime:
             return f"{self.hours:02}:" \
                    f"{self.minutes:02}:{self.full_seconds:02}:{self.centi_seconds:02}"
         return f"{self.minutes:02}:{self.full_seconds:02}:{self.centi_seconds:02}"
-
-    def to_string(self):
-        return str(self)
-
-    def to_timedelta(self):
-        tdelta = deepcopy(self.timedelta)
-        return tdelta
 
 
 class RatioNalTimer:
@@ -92,10 +92,6 @@ class RatioNalTimer:
         converted_to_float = float(new_ratio)
         self._ratio = converted_to_float
 
-    def _calculate_cycle_time(self) -> timedelta:
-        time_passed = datetime.now() - self._cycle_timestamps[-1]
-        return time_passed
-
     def status(self) -> str:
         return self._status
 
@@ -107,9 +103,6 @@ class RatioNalTimer:
         # no cycle is running --> use saved only
         return self._saved_work
 
-    def _save_cycle_work(self):
-        self._saved_work += self._calculate_cycle_time()
-
     def rest_time(self) -> timedelta:
         if self._status == "Working":
             return self._saved_rest + (self._calculate_cycle_time() / self._ratio)
@@ -117,13 +110,6 @@ class RatioNalTimer:
             return self._calculate_remaining_rest()
         # no cycle is running --> use saved only
         return self._saved_rest
-
-    def _calculate_remaining_rest(self) -> timedelta:
-        remaining_rest = self._saved_rest - self._calculate_cycle_time()
-        return remaining_rest if remaining_rest >= timedelta(0) else timedelta(0)
-
-    def _save_cycle_rest(self) -> None:
-        self._saved_rest = self.rest_time()
 
     def work_and_rest_time(self, use_simpletime: bool = True) -> Union[timedelta, SimpleTime]:
         """
@@ -142,7 +128,21 @@ class RatioNalTimer:
         self._saved_rest = timedelta(0)
 
     def all_rest_consumed(self) -> bool:
-        has_rest_started = bool(self._cycle_timestamps) # 0 timestamp implies timer not started
+        has_rest_started = bool(self._cycle_timestamps)  # 0 timestamp implies timer not started
         has_time_expired = self.rest_time() == timedelta(0)
         is_consumed = has_rest_started and has_time_expired
         return is_consumed
+
+    def _calculate_cycle_time(self) -> timedelta:
+        time_passed = datetime.now() - self._cycle_timestamps[-1]
+        return time_passed
+
+    def _save_cycle_work(self):
+        self._saved_work += self._calculate_cycle_time()
+
+    def _calculate_remaining_rest(self) -> timedelta:
+        remaining_rest = self._saved_rest - self._calculate_cycle_time()
+        return remaining_rest if remaining_rest >= timedelta(0) else timedelta(0)
+
+    def _save_cycle_rest(self) -> None:
+        self._saved_rest = self.rest_time()
