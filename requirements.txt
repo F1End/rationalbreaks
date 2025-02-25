@@ -1,3 +1,2 @@
 streamlit~=1.39.0
-simpleaudio~=1.0.4
 numpy~=2.1.2
